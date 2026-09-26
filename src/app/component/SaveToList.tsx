@@ -26,11 +26,18 @@ const SaveToList = ({ workout }: SaveToListProps) => {
             return;
         }
 
-        const updatedWorkouts = [...savedWorkouts, workout];
+        const updatedWorkouts = [
+            ...savedWorkouts,
+            workout,
+        ];
 
         localStorage.setItem(
             "savedWorkouts",
             JSON.stringify(updatedWorkouts)
+        );
+
+        window.dispatchEvent(
+            new CustomEvent("savedWorkoutsUpdated")
         );
 
         setSaved(true);

@@ -1,12 +1,24 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import {
+    useMemo,
+    useState,
+    useSyncExternalStore,
+} from "react";
+
 import MyPlanCard from "@/src/app/component/MyPlanCard";
+import MyPlanToggle from "../component/MyPlanToggle";
 import type { IWorkout } from "@/src/app/WorkoutType";
+import Link from "next/link";
 
 const PLAN_KEY = "my-plan";
+const SAVED_KEY = "savedWorkouts";
 
-const subscribe = (callback: () => void) => {
+// ========================================
+// Today's Plan
+// ========================================
+
+const subscribePlan = (callback: () => void) => {
     window.addEventListener("storage", callback);
     window.addEventListener("planUpdated", callback);
 
@@ -16,19 +28,61 @@ const subscribe = (callback: () => void) => {
     };
 };
 
-const getSnapshot = () => {
+const getPlanSnapshot = () => {
     return localStorage.getItem(PLAN_KEY) ?? "[]";
 };
 
-const getServerSnapshot = () => {
+const getPlanServerSnapshot = () => {
     return "[]";
 };
 
+// ========================================
+// Saved Workouts
+// ========================================
+
+const subscribeSaved = (callback: () => void) => {
+    window.addEventListener("storage", callback);
+    window.addEventListener(
+        "savedWorkoutsUpdated",
+        callback
+    );
+
+    return () => {
+        window.removeEventListener("storage", callback);
+        window.removeEventListener(
+            "savedWorkoutsUpdated",
+            callback
+        );
+    };
+};
+
+const getSavedSnapshot = () => {
+    return localStorage.getItem(SAVED_KEY) ?? "[]";
+};
+
+const getSavedServerSnapshot = () => {
+    return "[]";
+};
+
+// ========================================
+// My Plan
+// ========================================
+
 const MyPlan = () => {
+    const [activeTab, setActiveTab] = useState<
+        "today" | "saved"
+    >("today");
+
+    const [sortBy, setSortBy] = useState("Duration");
+
+    // ========================================
+    // Today's Plan Data
+    // ========================================
+
     const planSnapshot = useSyncExternalStore(
-        subscribe,
-        getSnapshot,
-        getServerSnapshot
+        subscribePlan,
+        getPlanSnapshot,
+        getPlanServerSnapshot
     );
 
     const workouts = useMemo<IWorkout[]>(() => {
@@ -37,14 +91,53 @@ const MyPlan = () => {
 
             return Array.isArray(plan) ? plan : [];
         } catch (error) {
-            console.error("Failed to load my plan:", error);
+            console.error(
+                "Failed to load my plan:",
+                error
+            );
+
             return [];
         }
     }, [planSnapshot]);
 
-    const [sortBy, setSortBy] = useState("Duration");
+    // ========================================
+    // Saved Workouts Data
+    // ========================================
 
-    // Remove workout
+    const savedSnapshot = useSyncExternalStore(
+        subscribeSaved,
+        getSavedSnapshot,
+        getSavedServerSnapshot
+    );
+
+    const savedWorkouts = useMemo<IWorkout[]>(() => {
+        try {
+            const saved = JSON.parse(savedSnapshot);
+
+            return Array.isArray(saved) ? saved : [];
+        } catch (error) {
+            console.error(
+                "Failed to load saved workouts:",
+                error
+            );
+
+            return [];
+        }
+    }, [savedSnapshot]);
+
+    // ========================================
+    // Active Workouts
+    // ========================================
+
+    const activeWorkouts =
+        activeTab === "today"
+            ? workouts
+            : savedWorkouts;
+
+    // ========================================
+    // Remove From Today's Plan
+    // ========================================
+
     const handleRemove = (id: IWorkout["id"]) => {
         const updatedPlan = workouts.filter(
             (workout) => workout.id !== id
@@ -62,7 +155,10 @@ const MyPlan = () => {
         );
     };
 
-    // Mark as done
+    // ========================================
+    // Done
+    // ========================================
+
     const handleDone = (id: IWorkout["id"]) => {
         const updatedPlan = workouts.filter(
             (workout) => workout.id !== id
@@ -80,118 +176,159 @@ const MyPlan = () => {
         );
     };
 
-    // Sort workouts
-    const sortedWorkouts = [...workouts].sort((a, b) => {
-        if (sortBy === "Duration") {
-            return a.duration - b.duration;
+    // ========================================
+    // Remove Saved Workout
+    // ========================================
+
+    const handleRemoveSaved = (
+        id: IWorkout["id"]
+    ) => {
+        const updatedSavedWorkouts =
+            savedWorkouts.filter(
+                (workout) => workout.id !== id
+            );
+
+        localStorage.setItem(
+            SAVED_KEY,
+            JSON.stringify(updatedSavedWorkouts)
+        );
+
+        window.dispatchEvent(
+            new CustomEvent("savedWorkoutsUpdated")
+        );
+    };
+
+    // ========================================
+    // Sort
+    // ========================================
+
+    const sortedWorkouts = [...activeWorkouts].sort(
+        (a, b) => {
+            if (sortBy === "Duration") {
+                return a.duration - b.duration;
+            }
+
+            if (sortBy === "Calories") {
+                return (
+                    b.caloriesBurned -
+                    a.caloriesBurned
+                );
+            }
+
+            if (sortBy === "Rating") {
+                return b.rating - a.rating;
+            }
+
+            return 0;
         }
+    );
 
-        if (sortBy === "Calories") {
-            return b.caloriesBurned - a.caloriesBurned;
-        }
-
-        if (sortBy === "Rating") {
-            return b.rating - a.rating;
-        }
-
-        return 0;
-    });
-
+    // ========================================
     // Stats
-    const totalExercises = workouts.length;
+    // ========================================
 
-    const totalMinutes = workouts.reduce(
-        (total, workout) => total + workout.duration,
+    const totalExercises = activeWorkouts.length;
+
+    const totalMinutes = activeWorkouts.reduce(
+        (total, workout) =>
+            total + workout.duration,
         0
     );
 
-    const totalCalories = workouts.reduce(
-        (total, workout) => total + workout.caloriesBurned,
+    const totalCalories = activeWorkouts.reduce(
+        (total, workout) =>
+            total + workout.caloriesBurned,
         0
     );
+
+    // ========================================
+    // UI
+    // ========================================
 
     return (
         <main className="container mx-auto px-4 py-20">
 
-            {/* Header */}
-            <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* ========================================
+                1. Header
+            ======================================== */}
 
-                <div>
-                    <h1 className="text-4xl font-bold">
-                        My Plan
-                    </h1>
+            <div className="mb-10">
+                <h1 className="text-4xl font-bold">
+                    My Plan
+                </h1>
 
-                    <p className="mt-2 text-gray-400">
-                        Cap of five lifts for today. Finish them, then load more.
-                    </p>
-                </div>
-
-                {/* Toggle View */}
-                <button
-                    type="button"
-                    className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 transition hover:bg-white/10"
-                >
-                    Toggle View
-                </button>
-
+                <p className="mt-2 text-gray-400">
+                    Cap of five lifts for today.
+                    Finish them, then load more.
+                </p>
             </div>
 
-            {/* Stats */}
-            <div className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            {/* ========================================
+                2. Stats
+            ======================================== */}
+
+            <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
 
                 {/* Exercises */}
-                <div className="rounded-2xl border border-white/10 p-6">
+                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-8">
                     <p className="text-gray-400">
                         Exercises
                     </p>
 
-                    <h2 className="mt-2 text-3xl font-bold">
+                    <h2 className="mt-3 text-4xl font-bold text-lime-400">
                         {totalExercises}
                     </h2>
                 </div>
 
                 {/* Minutes */}
-                <div className="rounded-2xl border border-white/10 p-6">
+                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-8">
                     <p className="text-gray-400">
                         Minutes
                     </p>
 
-                    <h2 className="mt-2 text-3xl font-bold">
+                    <h2 className="mt-3 text-4xl font-bold">
                         {totalMinutes}
                     </h2>
                 </div>
 
                 {/* Calories */}
-                <div className="rounded-2xl border border-white/10 p-6">
+                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-8">
                     <p className="text-gray-400">
                         Calories
                     </p>
 
-                    <h2 className="mt-2 text-3xl font-bold">
+                    <h2 className="mt-3 text-4xl font-bold">
                         {totalCalories}
                     </h2>
                 </div>
 
             </div>
 
-            {/* Sort */}
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* ========================================
+                3. Sort + Toggle
+            ======================================== */}
 
-                <h2 className="text-xl font-semibold">
-                    Today&apos;s Exercises
-                </h2>
+            {/* Toggle + Sort */}
+            <div className="mb-8 flex items-center justify-between">
 
-                <div className="flex items-center gap-2">
+                {/* Toggle - Left */}
+                <MyPlanToggle
+                    activeTab={activeTab}
+                    onChange={setActiveTab}
+                />
 
-                    <span className="text-gray-400">
+                {/* Sort By - Right */}
+                <div className="grid items-center gap-2">
+                    <span className="text-sm text-white font-extralight">
                         Sort By
                     </span>
 
                     <select
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="rounded-lg border border-white/10 bg-[#15171c] px-4 py-2 outline-none"
-                    >
+                        onChange={(e) =>
+                            setSortBy(e.target.value)
+                        }
+                        className="w-40 rounded-lg border border-white/10 bg-[#15171c] px-4 py-2 text-sm outline-none"                    >
                         <option value="Duration">
                             Duration
                         </option>
@@ -204,12 +341,14 @@ const MyPlan = () => {
                             Rating
                         </option>
                     </select>
-
                 </div>
 
             </div>
 
-            {/* My Plan Cards */}
+            {/* ========================================
+                4. Workout Cards
+            ======================================== */}
+
             <div className="space-y-4">
 
                 {sortedWorkouts.length > 0 ? (
@@ -218,7 +357,11 @@ const MyPlan = () => {
                         <MyPlanCard
                             key={workout.id}
                             workout={workout}
-                            onRemove={handleRemove}
+                            onRemove={
+                                activeTab === "today"
+                                    ? handleRemove
+                                    : handleRemoveSaved
+                            }
                             onDone={handleDone}
                         />
                     ))
@@ -227,22 +370,28 @@ const MyPlan = () => {
 
                     <div className="rounded-2xl border border-white/10 bg-[#191c22] p-10 text-center">
 
-                        <h3 className="text-xl font-semibold">
-                            No exercises in your plan
+                        <h3 className="text-3xl font-semibold">
+                            Nothing here yet
                         </h3>
 
-                        <p className="mt-2 text-gray-400">
-                            Add some workouts to see them here.
+                        <p className="mt-2 text-sm text-gray-400">
+                            {activeTab === "today"
+                                ? "Browse the library and add a lift to get today moving."
+                                : "Save a workout from the library to see it here."
+                            }
                         </p>
 
+                        <Link
+                            href="/libary"
+                            className="inline-block rounded-lg bg-lime-400 px-6 py-3 font-bold text-black transition hover:bg-lime-300"
+                        >
+                            Browse Workouts
+                        </Link>
+
                     </div>
-
                 )}
-
             </div>
-
         </main>
     );
 };
-
 export default MyPlan;
