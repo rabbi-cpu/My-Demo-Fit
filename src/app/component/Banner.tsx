@@ -35,12 +35,12 @@ const Banner = () => {
                     </p>
 
                     <div className="pt-6">
-                        <Link
+                        <a
                             href="#library"
-                            className="inline-block bg-lime-400 text-black font-bold px-6 py-3 rounded-lg hover:bg-lime-300 transition"
+                            className="inline-block rounded-lg bg-lime-400 px-6 py-3 font-bold text-black transition hover:bg-lime-300"
                         >
                             Browse Workouts
-                        </Link>
+                        </a>
                     </div>
 
                 </div>
