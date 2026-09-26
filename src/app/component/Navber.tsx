@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, {
@@ -63,12 +64,10 @@ const subscribeSaved = (callback: () => void) => {
     };
 };
 
-/* Current pathname */
 const getPathname = () => {
     if (typeof window === "undefined") {
         return "/";
     }
-
     return window.location.pathname;
 };
 
@@ -79,7 +78,6 @@ const subscribePathname = (
         "popstate",
         callback
     );
-
     return () => {
         window.removeEventListener(
             "popstate",
@@ -118,7 +116,7 @@ const Navber = () => {
         pathname.startsWith("/workout/");
 
     const isMyPlanActive =
-        pathname === "/myplan";
+        pathname === "/my-plan";
 
     return (
         <div className="sticky top-0 z-50 navbar border-b border-white/10 bg-[#090a0c]">
@@ -163,7 +161,7 @@ const Navber = () => {
                             </li>
                             <li>
                                 <Link
-                                    href="/myplan"
+                                    href="/my-plan"
                                     className={
                                         isMyPlanActive
                                             ? "font-semibold text-lime-400"
@@ -173,9 +171,9 @@ const Navber = () => {
                                     My Plan
                                 </Link>
                             </li>
-
                         </ul>
                     </div>
+
                     <div className="flex items-center">
                         <Link
                             href="/"
@@ -189,6 +187,7 @@ const Navber = () => {
                                 className="h-9 w-9 object-contain sm:h-10 sm:w-10"
                             />
                         </Link>
+
                         <Link
                             href="/"
                             className="ml-2 text-base font-black text-white sm:text-xl"
@@ -197,6 +196,7 @@ const Navber = () => {
                         </Link>
                     </div>
                 </div>
+
                 <div className="navbar-center hidden lg:flex">
                     <ul className="flex items-center gap-6">
                         <li>
@@ -211,9 +211,10 @@ const Navber = () => {
                                 Workouts
                             </Link>
                         </li>
+
                         <li>
                             <Link
-                                href="/myplan"
+                                href="/my-plan"
                                 className={
                                     isMyPlanActive
                                         ? "relative cursor-pointer font-semibold text-lime-400 after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-full after:bg-lime-400"
@@ -223,14 +224,13 @@ const Navber = () => {
                                 My Plan
                             </Link>
                         </li>
-
                     </ul>
-
                 </div>
+
                 <div className="navbar-end">
                     <div className="flex items-center gap-2 text-xs sm:gap-5 sm:text-sm">
                         <Link
-                            href="/myplan"
+                            href="/my-plan"
                             className="flex items-center text-gray-300 transition hover:text-white"
                         >
                             <span>
@@ -240,8 +240,9 @@ const Navber = () => {
                                 {planCount}
                             </span>
                         </Link>
+
                         <Link
-                            href="/myplan"
+                            href="/my-plan"
                             className="flex items-center text-gray-300 transition hover:text-white"
                         >
                             <span>
