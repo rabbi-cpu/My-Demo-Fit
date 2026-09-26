@@ -11,14 +11,10 @@ const WorkoutFetch = async (): Promise<IWorkout[]> => {
         "public",
         "Workout.json"
     );
-
     const file = await fs.readFile(filePath, "utf-8");
-
     return JSON.parse(file);
 };
-
 const WorkoutPromise = WorkoutFetch();
-
 const WorkoutCard = () => {
     const workouts = use(WorkoutPromise);
 
@@ -46,8 +42,6 @@ const WorkoutCard = () => {
                         <div
                             className="w-full overflow-hidden rounded-2xl border border-gray-800 bg-[#15171e] text-white shadow-lg transition hover:-translate-y-1 hover:border-lime-400"
                         >
-
-                            {/* Image */}
                             <Image
                                 src={workout.image}
                                 alt={workout.name}
@@ -55,11 +49,7 @@ const WorkoutCard = () => {
                                 height={300}
                                 className="h-56 w-full object-cover"
                             />
-
-                            {/* Content */}
                             <div className="p-5">
-
-                                {/* Muscle Groups */}
                                 <div className="mb-4 flex flex-wrap gap-2">
                                     {workout.muscleGroups.map((muscle) => (
                                         <span
@@ -70,47 +60,32 @@ const WorkoutCard = () => {
                                         </span>
                                     ))}
                                 </div>
-
-                                {/* Name + Difficulty */}
                                 <div className="flex items-start justify-between gap-3">
-
                                     <h2 className="text-xl font-bold">
                                         {workout.name}
                                     </h2>
-
                                     <span className="shrink-0 rounded-full border border-gray-600 px-3 py-1 text-xs text-gray-300">
                                         {workout.difficulty}
                                     </span>
-
                                 </div>
-
-                                {/* Description */}
                                 <p className="mt-2 min-h-12 text-sm leading-6 text-gray-400">
                                     {workout.description}
                                 </p>
-
-                                {/* Stats */}
                                 <div className="mt-5 flex items-center justify-between border border-gray-800 px-3 py-3 text-sm text-gray-400">
-
                                     <span>
                                         ◯ {workout.duration} min
                                     </span>
-
                                     <span>
                                         ♥ {workout.caloriesBurned} kcal
                                     </span>
-
                                     <span>
                                         ☆ {workout.rating}
                                     </span>
-
                                 </div>
-
                             </div>
                         </div>
                     </Link>
                 ))}
-
             </div>
         </div>
     );
