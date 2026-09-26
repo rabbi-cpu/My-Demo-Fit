@@ -6,10 +6,11 @@ import {
     useSyncExternalStore,
 } from "react";
 
+import Link from "next/link";
+
 import MyPlanCard from "@/src/app/component/MyPlanCard";
 import MyPlanToggle from "../component/MyPlanToggle";
 import type { IWorkout } from "@/src/app/WorkoutType";
-import Link from "next/link";
 
 const PLAN_KEY = "my-plan";
 const SAVED_KEY = "savedWorkouts";
@@ -246,18 +247,18 @@ const MyPlan = () => {
     // ========================================
 
     return (
-        <main className="container mx-auto px-4 py-20">
+        <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
 
             {/* ========================================
                 1. Header
             ======================================== */}
 
-            <div className="mb-10">
-                <h1 className="text-4xl font-bold">
+            <div className="mb-8 sm:mb-10">
+                <h1 className="text-3xl font-bold sm:text-4xl">
                     My Plan
                 </h1>
 
-                <p className="mt-2 text-gray-400">
+                <p className="mt-2 text-sm text-gray-400 sm:text-base">
                     Cap of five lifts for today.
                     Finish them, then load more.
                 </p>
@@ -267,37 +268,37 @@ const MyPlan = () => {
                 2. Stats
             ======================================== */}
 
-            <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
 
                 {/* Exercises */}
-                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-8">
-                    <p className="text-gray-400">
+                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-6 sm:p-8">
+                    <p className="text-sm text-gray-400">
                         Exercises
                     </p>
 
-                    <h2 className="mt-3 text-4xl font-bold text-lime-400">
+                    <h2 className="mt-3 text-3xl font-bold text-lime-400 sm:text-4xl">
                         {totalExercises}
                     </h2>
                 </div>
 
                 {/* Minutes */}
-                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-8">
-                    <p className="text-gray-400">
+                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-6 sm:p-8">
+                    <p className="text-sm text-gray-400">
                         Minutes
                     </p>
 
-                    <h2 className="mt-3 text-4xl font-bold">
+                    <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
                         {totalMinutes}
                     </h2>
                 </div>
 
                 {/* Calories */}
-                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-8">
-                    <p className="text-gray-400">
+                <div className="rounded-2xl border border-white/10 bg-[#191c22] p-6 sm:p-8">
+                    <p className="text-sm text-gray-400">
                         Calories
                     </p>
 
-                    <h2 className="mt-3 text-4xl font-bold">
+                    <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
                         {totalCalories}
                     </h2>
                 </div>
@@ -305,21 +306,22 @@ const MyPlan = () => {
             </div>
 
             {/* ========================================
-                3. Sort + Toggle
+                3. Toggle + Sort
             ======================================== */}
 
-            {/* Toggle + Sort */}
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
 
                 {/* Toggle - Left */}
-                <MyPlanToggle
-                    activeTab={activeTab}
-                    onChange={setActiveTab}
-                />
+                <div className="w-full sm:w-auto">
+                    <MyPlanToggle
+                        activeTab={activeTab}
+                        onChange={setActiveTab}
+                    />
+                </div>
 
                 {/* Sort By - Right */}
-                <div className="grid items-center gap-2">
-                    <span className="text-sm text-white font-extralight">
+                <div className="grid w-full gap-2 sm:w-auto">
+                    <span className="text-sm font-extralight text-white">
                         Sort By
                     </span>
 
@@ -328,7 +330,8 @@ const MyPlan = () => {
                         onChange={(e) =>
                             setSortBy(e.target.value)
                         }
-                        className="w-40 rounded-lg border border-white/10 bg-[#15171c] px-4 py-2 text-sm outline-none"                    >
+                        className="w-full rounded-lg border border-white/10 bg-[#15171c] px-4 py-2 text-sm outline-none sm:w-40"
+                    >
                         <option value="Duration">
                             Duration
                         </option>
@@ -368,30 +371,30 @@ const MyPlan = () => {
 
                 ) : (
 
-                    <div className="rounded-2xl border border-white/10 bg-[#191c22] p-10 text-center">
+                    <div className="rounded-2xl border border-white/10 bg-[#191c22] p-8 text-center sm:p-10">
 
-                        <h3 className="text-3xl font-semibold">
+                        <h3 className="text-2xl font-semibold sm:text-3xl">
                             Nothing here yet
                         </h3>
 
-                        <p className="mt-2 text-sm text-gray-400">
-                            {activeTab === "today"
-                                ? "Browse the library and add a lift to get today moving."
-                                : "Save a workout from the library to see it here."
-                            }
+                        <p className="mx-auto mt-2 max-w-md text-sm text-gray-400">
+                            Browse the library and add a lift to get today moving.
                         </p>
 
                         <Link
-                            href="/libary"
-                            className="inline-block rounded-lg bg-lime-400 px-6 py-3 font-bold text-black transition hover:bg-lime-300"
+                            href="/#library"
+                            className="mt-4 inline-block rounded-lg bg-lime-400 px-6 py-3 text-sm font-bold text-black transition hover:bg-lime-300 sm:text-base"
                         >
                             Browse Workouts
                         </Link>
 
                     </div>
                 )}
+
             </div>
+
         </main>
     );
 };
+
 export default MyPlan;
